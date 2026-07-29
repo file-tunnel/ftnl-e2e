@@ -13,7 +13,8 @@ progress, mobile layout, one-time pairing, and cross-context event ordering.
 ## Run against local sibling checkouts
 
 ```bash
-npm install
+nix develop
+npm ci
 npx playwright install chromium webkit
 
 FTNL_BACKEND_DIR=../ftnl-backend-api.rs \
@@ -22,6 +23,9 @@ npm test
 ```
 
 The suite starts both Rust services and waits for their health endpoints.
+`nix develop --command agent-check` performs dependency, type, and test
+discovery checks without launching browsers; the integration workflow installs
+the pinned npm Playwright browsers and runs the full two-context journey.
 
 ## Run against a deployed environment
 

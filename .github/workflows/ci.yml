@@ -2,35 +2,40 @@ name: e2e-ci
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: "23 7 * * *"
   pull_request:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   browser:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           path: ftnl-e2e
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           repository: file-tunnel/ftnl-backend-api.rs
           path: ftnl-backend-api.rs
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           repository: file-tunnel/ftnl-web-server.rs
           path: ftnl-web-server.rs
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: ftnl-e2e/package-lock.json
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
       - working-directory: ftnl-e2e
         run: npm ci
       - working-directory: ftnl-e2e
@@ -42,7 +47,7 @@ jobs:
           FTNL_BACKEND_DIR: ../ftnl-backend-api.rs
           FTNL_WEB_DIR: ../ftnl-web-server.rs
         run: npm test
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: failure()
         with:
           name: playwright-report
