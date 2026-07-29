@@ -1,0 +1,98 @@
+name: external-browser-smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_origin:
+        description: HTTPS origin for the isolated File Tunnel API
+        required: true
+        type: string
+      portal_origin:
+        description: HTTPS origin for the isolated File Tunnel upload portal
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: external-browser-smoke-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  conformance:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: playwright-chromium
+            engine: playwright
+            browser: chromium
+          - name: playwright-firefox
+            engine: playwright
+            browser: firefox
+          - name: playwright-webkit
+            engine: playwright
+            browser: webkit
+          - name: puppeteer-chrome
+            engine: puppeteer
+            browser: chrome
+          - name: selenium-chrome
+            engine: selenium
+            browser: chrome
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install Chrome for Selenium
+        if: matrix.engine == 'selenium'
+        uses: browser-actions/setup-chrome@2e1d749697dd1612b833dba4a722266286fbefcd # v2
+      - name: Install JavaScript dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: ${{ matrix.engine != 'puppeteer' }}
+        run: npm ci
+      - name: Install Playwright browser
+        if: matrix.engine == 'playwright'
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Run Playwright conformance
+        if: matrix.engine == 'playwright'
+        env:
+          FTNL_E2E_EXTERNAL: "1"
+          FTNL_API_ORIGIN: ${{ inputs.api_origin }}
+          FTNL_PORTAL_ORIGIN: ${{ inputs.portal_origin }}
+        run: npm run test:playwright -- --project=${{ matrix.browser }}
+      - name: Run Puppeteer conformance
+        if: matrix.engine == 'puppeteer'
+        env:
+          FTNL_E2E_EXTERNAL: "1"
+          FTNL_API_ORIGIN: ${{ inputs.api_origin }}
+          FTNL_PORTAL_ORIGIN: ${{ inputs.portal_origin }}
+        run: npm run test:puppeteer
+      - name: Run Selenium conformance
+        if: matrix.engine == 'selenium'
+        env:
+          FTNL_E2E_EXTERNAL: "1"
+          FTNL_API_ORIGIN: ${{ inputs.api_origin }}
+          FTNL_PORTAL_ORIGIN: ${{ inputs.portal_origin }}
+          SELENIUM_BROWSER: ${{ matrix.browser }}
+        run: npm run test:selenium
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: external-${{ matrix.name }}-diagnostics
+          path: |
+            browser-artifacts
+            playwright-report
+            test-results
+          if-no-files-found: ignore
+          retention-days: 3

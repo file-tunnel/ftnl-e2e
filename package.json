@@ -4,15 +4,28 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "playwright test",
-    "test:chromium": "playwright test --project=chromium",
+    "test": "npm run test:browser",
+    "test:browser": "npm run typecheck && npm run test:playwright && npm run test:puppeteer && npm run test:selenium",
+    "test:list": "playwright test --list && node scripts/check-suite-layout.mjs",
+    "test:playwright": "node scripts/with-services.mjs playwright",
+    "test:playwright:runner": "playwright test",
+    "test:puppeteer": "node scripts/with-services.mjs puppeteer",
+    "test:puppeteer:runner": "tsx --test --test-concurrency=1 tests/browser/puppeteer/*.test.ts",
+    "test:selenium": "node scripts/with-services.mjs selenium",
+    "test:selenium:runner": "tsx --test --test-concurrency=1 tests/browser/selenium/*.test.ts",
     "typecheck": "tsc --noEmit",
     "report": "playwright show-report"
   },
   "devDependencies": {
-    "@playwright/test": "^1.56.0",
+    "@playwright/test": "^1.62.0",
     "@types/node": "^24.0.0",
-    "typescript": "^5.9.0"
+    "@types/selenium-webdriver": "^4.35.6",
+    "@types/ws": "^8.18.1",
+    "puppeteer": "^25.4.0",
+    "selenium-webdriver": "^4.46.0",
+    "tsx": "^4.23.1",
+    "typescript": "^5.9.0",
+    "ws": "^8.21.1"
   },
   "license": "MIT"
 }

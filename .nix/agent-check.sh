@@ -1,6 +1,6 @@
 # shellcheck shell=bash
 set -euo pipefail
 
-npm ci
+PUPPETEER_SKIP_DOWNLOAD=true npm ci
 npm run typecheck
-npx playwright test --list
+npm run test:list

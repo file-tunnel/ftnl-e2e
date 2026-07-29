@@ -1,0 +1,207 @@
+name: browser-e2e
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "23 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-e2e-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    name: playwright-${{ matrix.browser }}
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout E2E suite
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          path: ftnl-e2e
+      - name: Checkout backend
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: file-tunnel/ftnl-backend-api.rs
+          path: ftnl-backend-api.rs
+      - name: Checkout portal
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: file-tunnel/ftnl-web-server.rs
+          path: ftnl-web-server.rs
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ftnl-e2e/package-lock.json
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
+      - name: Cache Rust builds
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          workspaces: |
+            ftnl-backend-api.rs -> target
+            ftnl-web-server.rs -> target
+          shared-key: browser-e2e
+      - name: Install JavaScript dependencies
+        working-directory: ftnl-e2e
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
+        run: npm ci
+      - name: Install Playwright browser
+        working-directory: ftnl-e2e
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Run Playwright journey
+        working-directory: ftnl-e2e
+        env:
+          FTNL_BACKEND_DIR: ../ftnl-backend-api.rs
+          FTNL_WEB_DIR: ../ftnl-web-server.rs
+        run: npm run test:playwright -- --project=${{ matrix.browser }}
+      - name: Upload Playwright diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-${{ matrix.browser }}-diagnostics
+          path: |
+            ftnl-e2e/browser-artifacts
+            ftnl-e2e/playwright-report
+            ftnl-e2e/test-results
+          if-no-files-found: ignore
+          retention-days: 3
+
+  puppeteer:
+    name: puppeteer-chrome
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout E2E suite
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          path: ftnl-e2e
+      - name: Checkout backend
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: file-tunnel/ftnl-backend-api.rs
+          path: ftnl-backend-api.rs
+      - name: Checkout portal
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: file-tunnel/ftnl-web-server.rs
+          path: ftnl-web-server.rs
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ftnl-e2e/package-lock.json
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
+      - name: Cache Rust builds
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          workspaces: |
+            ftnl-backend-api.rs -> target
+            ftnl-web-server.rs -> target
+          shared-key: browser-e2e
+      - name: Install JavaScript dependencies and Chrome for Testing
+        working-directory: ftnl-e2e
+        run: npm ci
+      - name: Run Puppeteer journey
+        working-directory: ftnl-e2e
+        env:
+          FTNL_BACKEND_DIR: ../ftnl-backend-api.rs
+          FTNL_WEB_DIR: ../ftnl-web-server.rs
+        run: npm run test:puppeteer
+      - name: Upload Puppeteer diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: puppeteer-chrome-diagnostics
+          path: ftnl-e2e/browser-artifacts
+          if-no-files-found: ignore
+          retention-days: 3
+
+  selenium:
+    name: selenium-${{ matrix.browser }}
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chrome, firefox]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout E2E suite
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          path: ftnl-e2e
+      - name: Checkout backend
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: file-tunnel/ftnl-backend-api.rs
+          path: ftnl-backend-api.rs
+      - name: Checkout portal
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: file-tunnel/ftnl-web-server.rs
+          path: ftnl-web-server.rs
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ftnl-e2e/package-lock.json
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
+      - name: Cache Rust builds
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          workspaces: |
+            ftnl-backend-api.rs -> target
+            ftnl-web-server.rs -> target
+          shared-key: browser-e2e
+      - name: Install Chrome
+        if: matrix.browser == 'chrome'
+        uses: browser-actions/setup-chrome@2e1d749697dd1612b833dba4a722266286fbefcd # v2
+      - name: Install Firefox
+        if: matrix.browser == 'firefox'
+        uses: browser-actions/setup-firefox@0bc507ddf224827e3b1af68e014d5e42ab93e795 # v1
+      - name: Install JavaScript dependencies
+        working-directory: ftnl-e2e
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
+        run: npm ci
+      - name: Run Selenium journey
+        working-directory: ftnl-e2e
+        env:
+          FTNL_BACKEND_DIR: ../ftnl-backend-api.rs
+          FTNL_WEB_DIR: ../ftnl-web-server.rs
+          SELENIUM_BROWSER: ${{ matrix.browser }}
+        run: npm run test:selenium
+      - name: Upload Selenium diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: selenium-${{ matrix.browser }}-diagnostics
+          path: ftnl-e2e/browser-artifacts
+          if-no-files-found: ignore
+          retention-days: 3

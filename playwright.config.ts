@@ -8,14 +8,21 @@ const backendDir = path.resolve(process.env.FTNL_BACKEND_DIR ?? "../ftnl-backend
 const portalDir = path.resolve(process.env.FTNL_WEB_DIR ?? "../ftnl-web-server.rs");
 
 export default defineConfig({
-  testDir: "tests",
+  testDir: "tests/browser/playwright",
+  testMatch: "**/*.test.ts",
   fullyParallel: false,
   workers: 1,
-  timeout: 60_000,
-  expect: { timeout: 10_000 },
+  timeout: 90_000,
+  expect: { timeout: 15_000 },
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? [["line"], ["html", { open: "never" }]] : "list",
+  reporter: process.env.CI
+    ? [
+        ["line"],
+        ["html", { open: "never" }],
+        ["junit", { outputFile: "test-results/playwright-junit.xml" }],
+      ]
+    : "list",
   outputDir: "test-results",
   use: {
     baseURL: portalOrigin,
@@ -55,10 +62,12 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
     {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+    },
+    {
       name: "webkit",
       use: { ...devices["Desktop Safari"] },
     },
   ],
 });
-
-export { apiOrigin, portalOrigin };

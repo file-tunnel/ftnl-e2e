@@ -4,7 +4,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "lib": ["ES2022", "DOM"],
-    "types": ["node", "@playwright/test"],
+    "types": ["node", "@playwright/test", "ws"],
     "strict": true,
     "noEmit": true
   },
