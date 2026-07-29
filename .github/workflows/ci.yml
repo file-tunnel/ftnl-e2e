@@ -1,0 +1,52 @@
+name: e2e-ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          path: ftnl-e2e
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          repository: file-tunnel/ftnl-backend-api.rs
+          path: ftnl-backend-api.rs
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          repository: file-tunnel/ftnl-web-server.rs
+          path: ftnl-web-server.rs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ftnl-e2e/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - working-directory: ftnl-e2e
+        run: npm ci
+      - working-directory: ftnl-e2e
+        run: npx playwright install --with-deps chromium webkit
+      - working-directory: ftnl-e2e
+        run: npm run typecheck
+      - working-directory: ftnl-e2e
+        env:
+          FTNL_BACKEND_DIR: ../ftnl-backend-api.rs
+          FTNL_WEB_DIR: ../ftnl-web-server.rs
+        run: npm test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            ftnl-e2e/playwright-report
+            ftnl-e2e/test-results
+          retention-days: 3
