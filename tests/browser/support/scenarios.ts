@@ -52,6 +52,11 @@ export async function singleFileTransfer(
         await download(tunnel, state.files[0]!.file_id),
         jpegBytes,
       );
+      assert.equal(
+        (await snapshot(tunnel)).status,
+        "complete",
+        "downloading every file must complete the tunnel",
+      );
 
       await expectText(phone, "#done", "Done");
       await phone.click("#done");
@@ -61,7 +66,6 @@ export async function singleFileTransfer(
         null,
         "Done must forget the phone capability",
       );
-      await cancel(tunnel);
     } finally {
       events.close();
     }
@@ -105,11 +109,15 @@ export async function multipleFileTransfer(
         pngBytes,
       );
       assert.equal(
+        (await snapshot(tunnel)).status,
+        "complete",
+        "downloading every file must complete the tunnel",
+      );
+      assert.equal(
         events.events.filter((event) => event.kind === "file.available").length,
         2,
       );
       assertOrdered(events.events);
-      await cancel(tunnel);
     } finally {
       events.close();
     }
