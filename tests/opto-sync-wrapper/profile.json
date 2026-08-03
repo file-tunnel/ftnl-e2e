@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "repository": "file-tunnel/ftnl-e2e",
+  "syncRepository": "file-tunnel/ftnl-sync",
+  "syncRef": "agent/den-1388-opto-sync-zed-adapter",
+  "syncPullRequest": 2,
+  "rolloutIssue": "DEN-1388",
+  "releaseGates": ["DEN-309", "DEN-363"],
+  "releaseState": "blocked-until-certified-package-published",
+  "dependency": {"package": "opto-sync/opto-sync-clients", "range": "^0.2.0"},
+  "collections": ["transfer_manifests", "chunk_receipts", "resume_checkpoints", "integrity_metadata"],
+  "persistence": {"web": ["indexeddb"], "mobile": ["sqlite"], "backend": ["postgres", "supabase"]},
+  "writeStrategies": ["queuedOptimistic", "remoteConfirmed"],
+  "requiredScenarios": ["real-browser-indexeddb-wasm", "durable-restart", "optimistic-rebase-no-flicker", "remote-confirmed-no-premature-view", "stable-mutation-id-replay", "stale-base-conflict", "tombstone-no-resurrection", "postgres-supabase-authority", "realtime-is-wake-hint"],
+  "domainGuards": [
+    "file bytes and encrypted blob transport remain outside the replicated metadata plane",
+    "chunk offsets, integrity hashes, ownership, and resume checkpoints remain File Tunnel-owned",
+    "the retained opto-sync client source pin must remain available until installed-artifact parity is proven"
+  ]
+}
