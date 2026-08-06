@@ -5,3 +5,7 @@ browser-artifacts/
 .DS_Store
 .cache/
 .direnv/
+tmp
+temp
+tmp/worktrees
+temp/worktrees
