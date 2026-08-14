@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {persist-credentials: false}
       - shell: bash
         run: |
@@ -55,7 +55,7 @@ jobs:
     env:
       SYNC_FLEET_TOKEN: ${{ secrets.SYNC_FLEET_TOKEN }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {persist-credentials: false}
       - name: Load wrapper identity from the reviewed product profile
         id: profile
@@ -72,7 +72,7 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$SYNC_FLEET_TOKEN" || { echo 'SYNC_FLEET_TOKEN is required to certify the wrapper checkout' >&2; exit 1; }
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ steps.profile.outputs.repository }}
           ref: ${{ steps.profile.outputs.ref }}
@@ -80,9 +80,9 @@ jobs:
           token: ${{ secrets.SYNC_FLEET_TOKEN }}
           submodules: recursive
           persist-credentials: false
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {repository: zed-pkg/zed-cli, ref: '${{ env.ZED_CLI_SHA }}', path: .tools/zed-cli, persist-credentials: false}
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {repository: zed-pkg/zed-interfaces, ref: '${{ env.ZED_INTERFACES_SHA }}', path: .tools/zed-interfaces, persist-credentials: false}
       - run: cargo build --locked --release --manifest-path .tools/zed-cli/Cargo.toml --bin zed
       - name: Install exactly the wrapper lock and run Opto-Sync conformance
