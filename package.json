@@ -14,7 +14,9 @@
     "test:selenium": "node scripts/with-services.mjs selenium",
     "test:selenium:runner": "tsx --test --test-concurrency=1 tests/browser/selenium/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "lint:ores": "if [ -f .ores-lint/lint.sh ]; then sh .ores-lint/lint.sh; else echo 'ores-lint not installed'; fi",
+    "prepublishOnly": "npm run lint:ores"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
@@ -27,5 +29,13 @@
     "typescript": "^7.0.2",
     "ws": "^8.21.1"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "oresLint": {
+    "note": "Declared, not installed. ores-lint resolves these from a global install - see .ores-lint/README.md",
+    "requires": {
+      "eslint": ">=9",
+      "typescript-eslint": ">=8 (optional; without it .ts files are skipped)"
+    },
+    "install": "npm i -g eslint typescript-eslint"
+  }
 }
