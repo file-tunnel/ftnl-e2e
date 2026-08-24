@@ -15,6 +15,11 @@ mobile-sized upload portal while the harness acts as the desktop host:
 creating the tunnel, subscribing to realtime events, verifying downloaded
 bytes, and cancelling the tunnel.
 
+The QR handoff scenario renders the server-issued pairing URI into a real PNG,
+decodes its pixels through a scanner implementation, and gives only that
+decoded value to the mobile-sized browser. The PNG remains in memory so its
+fragment capability never enters retained diagnostics.
+
 This catches failures that API-only tests miss: URL-fragment handling, CORS,
 Content Security Policy, WebSocket tickets, file-input behavior, XHR progress,
 mobile layout, one-time pairing, session resumption, and cross-context event
@@ -68,6 +73,7 @@ manual dispatch and requires both origins.
 - multi-file selection and byte-for-byte downloads;
 - progress and availability events are monotonic;
 - bytes downloaded by the desktop match the selected phone file;
+- a rendered and decoded QR artifact completes a byte-exact transfer;
 - QR fragment disappears from the phone address bar after claim;
 - pairing secret cannot be redeemed twice;
 - the claimed phone session survives reload but is forgotten after Done;
@@ -83,7 +89,7 @@ manual dispatch and requires both origins.
 
 - `e2e-static` type-checks every adapter and verifies all three directory
   contracts.
-- `browser-e2e` runs seven scenarios across six driver/browser combinations on
+- `browser-e2e` runs eight scenarios across six driver/browser combinations on
   every pull request and `main` push, plus nightly.
 - `external-browser-smoke` manually runs five conformance combinations against
   an isolated deployed environment.

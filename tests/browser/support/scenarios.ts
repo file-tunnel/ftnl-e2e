@@ -21,6 +21,7 @@ import {
   withSession,
 } from "./driver.js";
 import { fixtures, jpegBytes, pngBytes } from "./fixtures.js";
+import { renderAndScanQr } from "./qr.js";
 
 export async function singleFileTransfer(
   factory: BrowserFactory,
@@ -121,6 +122,42 @@ export async function multipleFileTransfer(
     } finally {
       events.close();
     }
+  });
+}
+
+export async function qrPairingHandoff(
+  factory: BrowserFactory,
+): Promise<void> {
+  await withSession(factory, "qr-pairing-handoff", async (phone) => {
+    const tunnel = await createTunnel();
+    const files = await fixtures();
+
+    const scannedUri = await renderAndScanQr(tunnel.pairing_uri);
+    assert.equal(scannedUri, tunnel.pairing_uri);
+    await phone.goto(scannedUri);
+    await expectText(phone, "#connection", "Connected securely");
+    await waitFor(
+      () => phone.currentUrl(),
+      (value) => new URL(value).hash === "",
+    );
+
+    const phoneCapability = await phone.sessionStorage(phoneSessionKey(tunnel));
+    assert.ok(phoneCapability, "QR handoff must establish a phone session");
+    assert.notEqual(phoneCapability, pairingSecret(tunnel));
+
+    await phone.upload("#files", [files.jpeg]);
+    await expectText(phone, ".upload-state", "Sent");
+    const state = await waitForSnapshot(
+      tunnel,
+      (value) =>
+        value.files.length === 1 && value.files[0]?.status === "available",
+    );
+    assert.deepEqual(
+      await download(tunnel, state.files[0]!.file_id),
+      jpegBytes,
+      "the file selected after QR pairing must arrive byte-for-byte",
+    );
+    assert.equal((await snapshot(tunnel)).status, "complete");
   });
 }
 
