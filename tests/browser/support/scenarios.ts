@@ -284,6 +284,49 @@ export async function capabilityBoundaries(
   });
 }
 
+export async function crossTunnelCapabilityIsolation(
+  factory: BrowserFactory,
+): Promise<void> {
+  await withSession(factory, "cross-tunnel-isolation", async (phone) => {
+    const first = await createTunnel();
+    const second = await createTunnel();
+    try {
+      await connect(phone, first);
+      const phoneCapability = await phone.sessionStorage(phoneSessionKey(first));
+      assert.ok(phoneCapability);
+
+      for (const foreignCapability of [
+        first.desktop_capability,
+        phoneCapability,
+      ]) {
+        const read = await fetch(
+          `${apiOrigin}/v1/tunnels/${second.tunnel_id}`,
+          { headers: { authorization: `Bearer ${foreignCapability}` } },
+        );
+        assert.equal(read.status, 401);
+
+        const deletion = await fetch(
+          `${apiOrigin}/v1/tunnels/${second.tunnel_id}`,
+          {
+            method: "DELETE",
+            headers: { authorization: `Bearer ${foreignCapability}` },
+          },
+        );
+        assert.equal(deletion.status, 401);
+      }
+
+      assert.equal(
+        (await snapshot(second)).status,
+        "waiting",
+        "foreign capabilities must not mutate the target tunnel",
+      );
+    } finally {
+      await cancel(first);
+      await cancel(second);
+    }
+  });
+}
+
 async function connect(page: BrowserPage, tunnel: Tunnel): Promise<void> {
   assert.match(tunnel.pairing_uri, /#c=/);
   await page.goto(tunnel.pairing_uri);
