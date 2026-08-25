@@ -1,0 +1,24 @@
+[package]
+org = "file-tunnel"
+name = "ftnl-e2e"
+version = "0.1.0"
+description = "Cross-driver end-to-end evidence suite for File Tunnel"
+license = "MIT"
+keywords = ["file-tunnel", "e2e", "playwright", "puppeteer", "selenium"]
+
+[package.repository]
+vcs = "git"
+url = "https://github.com/file-tunnel/ftnl-e2e"
+
+[publish]
+include_readme = true
+tag_format = "v{version}"
+smoke_test = "npm run test:list"
+exclude = [".env", ".env.*", "env/dec/**", "node_modules/**", ".zed/**", ".vendor/**", "artifacts/**", "playwright-report/**", "test-results/**", "**/*.log"]
+
+[targets.repository]
+dir = "."
+adapter = "none"
+
+[scripts]
+test = "npm run test:list"
