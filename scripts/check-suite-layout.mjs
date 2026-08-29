@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readdir } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 
 const root = path.resolve("tests/browser");
@@ -26,3 +26,20 @@ for (const framework of frameworks) {
   }
   process.stdout.write(`${framework}: ${tests.length} test modules\n`);
 }
+
+for (const required of [
+  "tests/desktop/desktop-parity.e2e.test.mjs",
+  "tests/desktop/sources.json",
+]) {
+  await access(path.resolve(required));
+}
+process.stdout.write("desktop: parity test and immutable source lock\n");
+
+const serviceLauncher = await readFile(
+  path.resolve("scripts/with-services.mjs"),
+  "utf8",
+);
+assert.match(serviceLauncher, /"ftnl-backend-api"/);
+assert.match(serviceLauncher, /"ftnl-web-server"/);
+assert.match(serviceLauncher, /"--bin", binary/);
+process.stdout.write("services: Rust binaries selected explicitly\n");

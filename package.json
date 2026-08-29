@@ -7,6 +7,7 @@
     "test": "npm run test:browser",
     "test:browser": "npm run typecheck && npm run test:playwright && npm run test:puppeteer && npm run test:selenium",
     "test:list": "playwright test --list && node scripts/check-suite-layout.mjs",
+    "test:desktop": "node --test tests/desktop/desktop-parity.e2e.test.mjs",
     "test:playwright": "node scripts/with-services.mjs playwright",
     "test:playwright:runner": "playwright test",
     "test:puppeteer": "node scripts/with-services.mjs puppeteer",
