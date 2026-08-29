@@ -85,6 +85,24 @@ manual dispatch and requires both origins.
 - portal privacy/security headers are present;
 - cancellation closes the tunnel.
 
+## Desktop parity
+
+The independent desktop lane assembles the Rust and Flutter feature manifests
+against one immutable JSON Schema revision and verifies the Bluetooth transport
+boundary for Shared Auth relays, peer information, and signed update metadata:
+
+```bash
+npm run test:desktop
+```
+
+Local execution uses the sibling `ftnl-interfaces`, `ftnl-desktop-app.rs`, and
+`file-tunnel-test/contract-conformance-tests` checkouts. CI checks out their
+exact commits without private-repository credentials, validates all 12 paired
+desktop features, and executes the Rust app's headless reducer suite. Flutter is
+represented by sanitized, commit-bound evidence because its source repository
+is private; the separate gated test-org lane executes the private source when
+its least-privilege integration credential is enabled.
+
 ## GitHub Actions
 
 - `e2e-static` type-checks every adapter and verifies all three directory
@@ -93,6 +111,8 @@ manual dispatch and requires both origins.
   every pull request and `main` push, plus nightly.
 - `external-browser-smoke` manually runs five conformance combinations against
   an isolated deployed environment.
+- `desktop-parity` verifies immutable Rust/Flutter schema parity, Bluetooth
+  security boundaries, and the executable Rust headless reducer.
 - `nix` verifies the reproducible development shell, pinned workflows, shell
   scripts, and static agent checks.
 
