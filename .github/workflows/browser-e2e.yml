@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+env:
+  BACKEND_REV: 1122ab543ab5157e02c5808da69fab57da7c1ed1
+  PORTAL_PUBLIC_REV: 3499f00c40a5ed973d6e33cc0f77668f0e6e93f3
+
 concurrency:
   group: browser-e2e-${{ github.repository }}-${{ github.ref }}
   cancel-in-progress: true
@@ -35,12 +39,14 @@ jobs:
         with:
           persist-credentials: false
           repository: file-tunnel/ftnl-backend-api.rs
+          ref: ${{ env.BACKEND_REV }}
           path: ftnl-backend-api.rs
       - name: Checkout portal
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           repository: file-tunnel/ftnl-web-server.rs
+          ref: ${{ env.PORTAL_PUBLIC_REV }}
           path: ftnl-web-server.rs
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -98,12 +104,14 @@ jobs:
         with:
           persist-credentials: false
           repository: file-tunnel/ftnl-backend-api.rs
+          ref: ${{ env.BACKEND_REV }}
           path: ftnl-backend-api.rs
       - name: Checkout portal
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           repository: file-tunnel/ftnl-web-server.rs
+          ref: ${{ env.PORTAL_PUBLIC_REV }}
           path: ftnl-web-server.rs
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -157,12 +165,14 @@ jobs:
         with:
           persist-credentials: false
           repository: file-tunnel/ftnl-backend-api.rs
+          ref: ${{ env.BACKEND_REV }}
           path: ftnl-backend-api.rs
       - name: Checkout portal
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           repository: file-tunnel/ftnl-web-server.rs
+          ref: ${{ env.PORTAL_PUBLIC_REV }}
           path: ftnl-web-server.rs
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0

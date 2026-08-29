@@ -108,7 +108,10 @@ its least-privilege integration credential is enabled.
 - `e2e-static` type-checks every adapter and verifies all three directory
   contracts.
 - `browser-e2e` runs eight scenarios across six driver/browser combinations on
-  every pull request and `main` push, plus nightly.
+  every pull request and `main` push, plus nightly. It pins exact public app
+  commits so the lane remains credential-free; the current portal integration
+  that depends on private `shared-auth-lib` must be certified separately with a
+  least-privilege cross-organization credential rather than a broad token.
 - `external-browser-smoke` manually runs five conformance combinations against
   an isolated deployed environment.
 - `desktop-parity` verifies immutable Rust/Flutter schema parity, Bluetooth
