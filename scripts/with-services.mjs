@@ -36,16 +36,24 @@ if (!external) {
   const portalDir = path.resolve(
     process.env.FTNL_WEB_DIR ?? "../ftnl-web-server.rs",
   );
-  const backend = startCargo(path.join(backendDir, "Cargo.toml"), {
-    FTNL_BIND: new URL(apiOrigin).host,
-    FTNL_PORTAL_ORIGIN: portalOrigin,
-    RUST_LOG: "ftnl_backend_api=info",
-  });
-  const portal = startCargo(path.join(portalDir, "Cargo.toml"), {
-    FTNL_WEB_BIND: new URL(portalOrigin).host,
-    FTNL_API_ORIGIN: apiOrigin,
-    RUST_LOG: "ftnl_web_server=info",
-  });
+  const backend = startCargo(
+    path.join(backendDir, "Cargo.toml"),
+    "ftnl-backend-api",
+    {
+      FTNL_BIND: new URL(apiOrigin).host,
+      FTNL_PORTAL_ORIGIN: portalOrigin,
+      RUST_LOG: "ftnl_backend_api=info",
+    },
+  );
+  const portal = startCargo(
+    path.join(portalDir, "Cargo.toml"),
+    "ftnl-web-server",
+    {
+      FTNL_WEB_BIND: new URL(portalOrigin).host,
+      FTNL_API_ORIGIN: apiOrigin,
+      RUST_LOG: "ftnl_web_server=info",
+    },
+  );
   children.push(backend, portal);
   await Promise.all([
     waitForHealth(`${apiOrigin}/healthz`, backend),
@@ -74,10 +82,10 @@ const exitCode = await new Promise((resolve, reject) => {
 await cleanup();
 process.exitCode = exitCode;
 
-function startCargo(manifestPath, extraEnv) {
+function startCargo(manifestPath, binary, extraEnv) {
   return spawn(
     "cargo",
-    ["run", "--quiet", "--manifest-path", manifestPath],
+    ["run", "--quiet", "--manifest-path", manifestPath, "--bin", binary],
     {
       detached: process.platform !== "win32",
       env: { ...process.env, ...extraEnv },
