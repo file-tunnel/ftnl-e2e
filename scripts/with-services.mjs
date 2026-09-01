@@ -38,7 +38,7 @@ if (!external) {
   );
   const backend = startCargo(
     path.join(backendDir, "Cargo.toml"),
-    "ftnl-backend-api",
+    process.env.FTNL_BACKEND_BIN ?? "ftnl-backend-api",
     {
       FTNL_BIND: new URL(apiOrigin).host,
       FTNL_PORTAL_ORIGIN: portalOrigin,
@@ -47,7 +47,7 @@ if (!external) {
   );
   const portal = startCargo(
     path.join(portalDir, "Cargo.toml"),
-    "ftnl-web-server",
+    process.env.FTNL_WEB_BIN ?? "ftnl-web-server",
     {
       FTNL_WEB_BIND: new URL(portalOrigin).host,
       FTNL_API_ORIGIN: apiOrigin,
