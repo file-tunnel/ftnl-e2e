@@ -1,5 +1,6 @@
 import {
   multipleFileTransfer,
+  qrPairingHandoff,
   singleFileTransfer,
 } from "../support/scenarios.js";
 import { puppeteerTest } from "../support/puppeteer-test.js";
@@ -12,4 +13,9 @@ puppeteerTest(
 puppeteerTest(
   "moves multiple selected phone images without byte changes",
   multipleFileTransfer,
+);
+
+puppeteerTest(
+  "scans a real QR artifact before the mobile transfer handoff",
+  qrPairingHandoff,
 );

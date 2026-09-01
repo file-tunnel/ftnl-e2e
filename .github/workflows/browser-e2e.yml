@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+env:
+  BACKEND_REV: 1122ab543ab5157e02c5808da69fab57da7c1ed1
+  PORTAL_PUBLIC_REV: 3499f00c40a5ed973d6e33cc0f77668f0e6e93f3
+
 concurrency:
   group: browser-e2e-${{ github.repository }}-${{ github.ref }}
   cancel-in-progress: true
@@ -35,12 +39,14 @@ jobs:
         with:
           persist-credentials: false
           repository: file-tunnel/ftnl-backend-api.rs
+          ref: ${{ env.BACKEND_REV }}
           path: ftnl-backend-api.rs
       - name: Checkout portal
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           repository: file-tunnel/ftnl-web-server.rs
+          ref: ${{ env.PORTAL_PUBLIC_REV }}
           path: ftnl-web-server.rs
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -51,7 +57,7 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
       - name: Cache Rust builds
-        uses: Swatinem/rust-cache@a45951ff880207c249adf57334cf2e9bd81d6e1e # v2
+        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2
         with:
           workspaces: |
             ftnl-backend-api.rs -> target
@@ -98,12 +104,14 @@ jobs:
         with:
           persist-credentials: false
           repository: file-tunnel/ftnl-backend-api.rs
+          ref: ${{ env.BACKEND_REV }}
           path: ftnl-backend-api.rs
       - name: Checkout portal
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           repository: file-tunnel/ftnl-web-server.rs
+          ref: ${{ env.PORTAL_PUBLIC_REV }}
           path: ftnl-web-server.rs
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -114,7 +122,7 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
       - name: Cache Rust builds
-        uses: Swatinem/rust-cache@a45951ff880207c249adf57334cf2e9bd81d6e1e # v2
+        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2
         with:
           workspaces: |
             ftnl-backend-api.rs -> target
@@ -157,12 +165,14 @@ jobs:
         with:
           persist-credentials: false
           repository: file-tunnel/ftnl-backend-api.rs
+          ref: ${{ env.BACKEND_REV }}
           path: ftnl-backend-api.rs
       - name: Checkout portal
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           repository: file-tunnel/ftnl-web-server.rs
+          ref: ${{ env.PORTAL_PUBLIC_REV }}
           path: ftnl-web-server.rs
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -173,7 +183,7 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
       - name: Cache Rust builds
-        uses: Swatinem/rust-cache@a45951ff880207c249adf57334cf2e9bd81d6e1e # v2
+        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2
         with:
           workspaces: |
             ftnl-backend-api.rs -> target
@@ -181,7 +191,7 @@ jobs:
           shared-key: browser-e2e
       - name: Install Chrome
         if: matrix.browser == 'chrome'
-        uses: browser-actions/setup-chrome@2e1d749697dd1612b833dba4a722266286fbefcd # v2
+        uses: browser-actions/setup-chrome@48ad923757ca74d66703209fe939badbdf80f2f4 # v2
       - name: Install Firefox
         if: matrix.browser == 'firefox'
         uses: browser-actions/setup-firefox@0bc507ddf224827e3b1af68e014d5e42ab93e795 # v1

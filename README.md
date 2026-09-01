@@ -15,6 +15,11 @@ mobile-sized upload portal while the harness acts as the desktop host:
 creating the tunnel, subscribing to realtime events, verifying downloaded
 bytes, and cancelling the tunnel.
 
+The QR handoff scenario renders the server-issued pairing URI into a real PNG,
+decodes its pixels through a scanner implementation, and gives only that
+decoded value to the mobile-sized browser. The PNG remains in memory so its
+fragment capability never enters retained diagnostics.
+
 This catches failures that API-only tests miss: URL-fragment handling, CORS,
 Content Security Policy, WebSocket tickets, file-input behavior, XHR progress,
 mobile layout, one-time pairing, session resumption, and cross-context event
@@ -68,6 +73,7 @@ manual dispatch and requires both origins.
 - multi-file selection and byte-for-byte downloads;
 - progress and availability events are monotonic;
 - bytes downloaded by the desktop match the selected phone file;
+- a rendered and decoded QR artifact completes a byte-exact transfer;
 - QR fragment disappears from the phone address bar after claim;
 - pairing secret cannot be redeemed twice;
 - the claimed phone session survives reload but is forgotten after Done;
@@ -79,14 +85,37 @@ manual dispatch and requires both origins.
 - portal privacy/security headers are present;
 - cancellation closes the tunnel.
 
+## Desktop parity
+
+The independent desktop lane assembles the Rust and Flutter feature manifests
+against one immutable JSON Schema revision and verifies the Bluetooth transport
+boundary for Shared Auth relays, peer information, and signed update metadata:
+
+```bash
+npm run test:desktop
+```
+
+Local execution uses the sibling `ftnl-interfaces`, `ftnl-desktop-app.rs`, and
+`file-tunnel-test/contract-conformance-tests` checkouts. CI checks out their
+exact commits without private-repository credentials, validates all 12 paired
+desktop features, and executes the Rust app's headless reducer suite. Flutter is
+represented by sanitized, commit-bound evidence because its source repository
+is private; the separate gated test-org lane executes the private source when
+its least-privilege integration credential is enabled.
+
 ## GitHub Actions
 
 - `e2e-static` type-checks every adapter and verifies all three directory
   contracts.
-- `browser-e2e` runs seven scenarios across six driver/browser combinations on
-  every pull request and `main` push, plus nightly.
+- `browser-e2e` runs eight scenarios across six driver/browser combinations on
+  every pull request and `main` push, plus nightly. It pins exact public app
+  commits so the lane remains credential-free; the current portal integration
+  that depends on private `shared-auth-lib` must be certified separately with a
+  least-privilege cross-organization credential rather than a broad token.
 - `external-browser-smoke` manually runs five conformance combinations against
   an isolated deployed environment.
+- `desktop-parity` verifies immutable Rust/Flutter schema parity, Bluetooth
+  security boundaries, and the executable Rust headless reducer.
 - `nix` verifies the reproducible development shell, pinned workflows, shell
   scripts, and static agent checks.
 
