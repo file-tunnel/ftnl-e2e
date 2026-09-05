@@ -41,6 +41,7 @@ const expectedFeatures = [
   "desktop.window.close_to_tray",
   "desktop.window.regular",
   "privacy.source_exclusions",
+  "proximity.secure_session",
 ];
 
 test("desktop sources are immutable and traceable across organizations", () => {
@@ -88,6 +89,26 @@ test("Rust and Flutter publish exactly equal implemented feature semantics", () 
   const flutterSemantics = validateManifest(flutterManifest);
   assert.deepEqual(rustSemantics, flutterSemantics);
   assert.ok(rustSemantics.every(([, status]) => status === "implemented"));
+});
+
+test("secure proximity parity names the reviewed cross-language substrate", () => {
+  const rustSecure = rustManifest.features.find(
+    ({ feature_id }) => feature_id === "proximity.secure_session",
+  );
+  const flutterSecure = flutterEvidence.feature_manifest.features.find(
+    ({ feature_id }) => feature_id === "proximity.secure_session",
+  );
+
+  assert.deepEqual(rustSecure, {
+    feature_id: "proximity.secure_session",
+    status: "implemented",
+    evidence: ["src/secure_bluetooth.rs unit tests"],
+  });
+  assert.deepEqual(flutterSecure, {
+    feature_id: "proximity.secure_session",
+    status: "implemented",
+    evidence: ["lib/secure_bluetooth.dart and secure_bluetooth_test.dart"],
+  });
 });
 
 test("Rust resolves the same immutable interface revision as Flutter evidence", () => {
