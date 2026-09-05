@@ -111,6 +111,42 @@ test("secure proximity parity names the reviewed cross-language substrate", () =
   });
 });
 
+test("desktop shell parity names tray, close, and regular-window evidence", () => {
+  const expected = {
+    "desktop.tray.lifecycle": {
+      rust: ["src/desktop/shell.rs unit tests"],
+      flutter: ["lib/desktop lifecycle controller and host tests"],
+    },
+    "desktop.window.close_to_tray": {
+      rust: ["src/desktop/shell.rs unit tests"],
+      flutter: ["lib/desktop lifecycle controller tests"],
+    },
+    "desktop.window.regular": {
+      rust: ["src/main.rs native window"],
+      flutter: ["lib/file_tunnel_app.dart adaptive Material workspace"],
+    },
+  };
+
+  for (const [featureId, evidence] of Object.entries(expected)) {
+    const rustFeature = rustManifest.features.find(
+      ({ feature_id }) => feature_id === featureId,
+    );
+    const flutterFeature = flutterEvidence.feature_manifest.features.find(
+      ({ feature_id }) => feature_id === featureId,
+    );
+    assert.deepEqual(rustFeature, {
+      feature_id: featureId,
+      status: "implemented",
+      evidence: evidence.rust,
+    });
+    assert.deepEqual(flutterFeature, {
+      feature_id: featureId,
+      status: "implemented",
+      evidence: evidence.flutter,
+    });
+  }
+});
+
 test("Rust resolves the same immutable interface revision as Flutter evidence", () => {
   const interfaceCommit = sourceLock.sources.interfaces.commit;
   const cargoManifest = fs.readFileSync(path.join(rustRoot, "Cargo.toml"), "utf8");
