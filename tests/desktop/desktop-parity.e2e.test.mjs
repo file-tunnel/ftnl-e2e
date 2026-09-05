@@ -140,6 +140,58 @@ test("proximity transport cannot become identity proof or an application update 
     assert.equal(update.properties[forbidden], undefined);
 });
 
+test("desktop and proximity schemas stay closed and credential-free", () => {
+  const forbiddenProperties = new Set([
+    "access_token",
+    "assurance_level",
+    "authorization",
+    "bearer_token",
+    "factor_result",
+    "installer",
+    "otp",
+    "password",
+    "private_key",
+    "refresh_token",
+    "silent_install",
+  ]);
+  const visit = (value, location) => {
+    if (Array.isArray(value)) {
+      value.forEach((entry, index) => visit(entry, `${location}[${index}]`));
+      return;
+    }
+    if (!value || typeof value !== "object") return;
+    if (value.type === "object") {
+      assert.equal(
+        value.additionalProperties,
+        false,
+        `${location} must reject unknown fields`,
+      );
+    }
+    if (value.properties) {
+      for (const name of Object.keys(value.properties)) {
+        assert.equal(
+          forbiddenProperties.has(name),
+          false,
+          `${location} exposes forbidden property ${name}`,
+        );
+      }
+    }
+    for (const [key, child] of Object.entries(value)) visit(child, `${location}.${key}`);
+  };
+
+  visit(schema, "desktop-workspace.schema.json");
+  visit(proximity, "proximity.schema.json");
+
+  const serializedEvidence = JSON.stringify({
+    rust: rustManifest,
+    flutter: flutterEvidence.feature_manifest,
+  });
+  assert.doesNotMatch(
+    serializedEvidence,
+    /access[_-]token|refresh[_-]token|bearer[_-]token|private[_-]key|file:\/\//i,
+  );
+});
+
 function validateManifest(manifest) {
   assert.deepEqual(Object.keys(manifest), ["implementation", "features"]);
   assert.equal(manifest.features.length, expectedFeatures.length);
