@@ -33,6 +33,7 @@ const expectedFeatures = [
   "clipboard.clear_unpinned",
   "clipboard.deduplicate",
   "clipboard.delete",
+  "clipboard.history.encrypted_snapshot",
   "clipboard.history.text",
   "clipboard.pin",
   "clipboard.retention",
@@ -75,6 +76,15 @@ test("workspace schema accounts for the same ordered baseline in both desktop ap
   assert.equal(manifestFeatures.maxItems, expectedFeatures.length);
   assert.equal(schema.$defs.implementationManifest.additionalProperties, false);
   assert.equal(schema.$defs.parityManifest.additionalProperties, false);
+  assert.equal(
+    schema.$defs.encryptedWorkspaceSnapshot.properties.algorithm.const,
+    "xchacha20-poly1305",
+  );
+  assert.equal(
+    schema.$defs.encryptedWorkspaceSnapshot.properties.associated_data.const,
+    "file-tunnel.desktop-workspace.v1",
+  );
+  assert.equal(schema.$defs.encryptedWorkspaceSnapshot.additionalProperties, false);
 });
 
 test("Rust and Flutter publish exactly equal implemented feature semantics", () => {
@@ -145,6 +155,25 @@ test("desktop shell parity names tray, close, and regular-window evidence", () =
       evidence: evidence.flutter,
     });
   }
+});
+
+test("encrypted workspace snapshot parity names both reviewed codecs", () => {
+  const rustFeature = rustManifest.features.find(
+    ({ feature_id }) => feature_id === "clipboard.history.encrypted_snapshot",
+  );
+  const flutterFeature = flutterEvidence.feature_manifest.features.find(
+    ({ feature_id }) => feature_id === "clipboard.history.encrypted_snapshot",
+  );
+  assert.deepEqual(rustFeature, {
+    feature_id: "clipboard.history.encrypted_snapshot",
+    status: "implemented",
+    evidence: ["src/workspace_snapshot.rs unit tests"],
+  });
+  assert.deepEqual(flutterFeature, {
+    feature_id: "clipboard.history.encrypted_snapshot",
+    status: "implemented",
+    evidence: ["lib/workspace_snapshot.dart and workspace_snapshot_test.dart"],
+  });
 });
 
 test("Rust resolves the same immutable interface revision as Flutter evidence", () => {
