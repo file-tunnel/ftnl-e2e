@@ -16,7 +16,7 @@ jobs:
     env:
       NEXT_LOGGERS_SHA: 5a2596ccb662baca6c1b27327683072da0803b31
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 22
