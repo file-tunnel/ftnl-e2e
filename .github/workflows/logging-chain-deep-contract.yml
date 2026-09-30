@@ -17,7 +17,7 @@ jobs:
       NEXT_LOGGERS_SHA: 5a2596ccb662baca6c1b27327683072da0803b31
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - name: Fetch exact next-loggers source
