@@ -20,17 +20,17 @@
     "prepublishOnly": "npm run lint:ores"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0",
-    "@types/node": "^26.6.4",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.5",
     "@types/pngjs": "^6.0.5",
     "@types/qrcode": "^1.5.6",
     "@types/selenium-webdriver": "^4.35.7",
     "@types/ws": "^8.18.2",
     "jsqr": "^1.4.0",
     "pngjs": "^7.0.0",
-    "puppeteer": "^25.12.0",
+    "puppeteer": "^25.14.0",
     "qrcode": "^1.5.4",
-    "selenium-webdriver": "^4.50.0",
+    "selenium-webdriver": "^4.51.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "ws": "^8.22.0"
