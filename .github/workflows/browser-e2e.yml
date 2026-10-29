@@ -32,8 +32,16 @@ jobs:
       - name: Checkout E2E suite
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
           path: ftnl-e2e
+      - name: Assert exact E2E suite head
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git -C ftnl-e2e rev-parse HEAD)" = "$EXPECTED_HEAD"
       - name: Checkout backend
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -48,6 +56,12 @@ jobs:
           repository: file-tunnel/ftnl-web-server.rs
           ref: ${{ env.PORTAL_PUBLIC_REV }}
           path: ftnl-web-server.rs
+      - name: Assert exact backend and portal revisions
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C ftnl-backend-api.rs rev-parse HEAD)" = "$BACKEND_REV"
+          test "$(git -C ftnl-web-server.rs rev-parse HEAD)" = "$PORTAL_PUBLIC_REV"
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -97,8 +111,16 @@ jobs:
       - name: Checkout E2E suite
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
           path: ftnl-e2e
+      - name: Assert exact E2E suite head
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git -C ftnl-e2e rev-parse HEAD)" = "$EXPECTED_HEAD"
       - name: Checkout backend
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -113,6 +135,12 @@ jobs:
           repository: file-tunnel/ftnl-web-server.rs
           ref: ${{ env.PORTAL_PUBLIC_REV }}
           path: ftnl-web-server.rs
+      - name: Assert exact backend and portal revisions
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C ftnl-backend-api.rs rev-parse HEAD)" = "$BACKEND_REV"
+          test "$(git -C ftnl-web-server.rs rev-parse HEAD)" = "$PORTAL_PUBLIC_REV"
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -158,8 +186,16 @@ jobs:
       - name: Checkout E2E suite
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
           path: ftnl-e2e
+      - name: Assert exact E2E suite head
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git -C ftnl-e2e rev-parse HEAD)" = "$EXPECTED_HEAD"
       - name: Checkout backend
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -174,6 +210,12 @@ jobs:
           repository: file-tunnel/ftnl-web-server.rs
           ref: ${{ env.PORTAL_PUBLIC_REV }}
           path: ftnl-web-server.rs
+      - name: Assert exact backend and portal revisions
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C ftnl-backend-api.rs rev-parse HEAD)" = "$BACKEND_REV"
+          test "$(git -C ftnl-web-server.rs rev-parse HEAD)" = "$PORTAL_PUBLIC_REV"
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
