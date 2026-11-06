@@ -350,8 +350,34 @@ export async function crossTunnelCapabilityIsolation(
           },
         );
         assert.equal(deletion.status, 401);
+
+        // An event ticket is a single-use capability derived from the
+        // desktop credential; no credential from a different tunnel may
+        // mint one for the target, even if it is a valid phone capability.
+        const ticket = await fetch(
+          `${apiOrigin}/v1/tunnels/${second.tunnel_id}/event-tickets`,
+          {
+            method: "POST",
+            headers: { authorization: `Bearer ${foreignCapability}` },
+          },
+        );
+        assert.equal(
+          ticket.status,
+          401,
+          "foreign tunnel credentials must not mint event tickets",
+        );
+        const denied = await ticket.text();
+        assert.ok(
+          !denied.includes(foreignCapability),
+          "failure response must not echo the presented capability",
+        );
       }
 
+      assert.equal(
+        (await snapshot(first)).status,
+        "connected",
+        "foreign-ticket probes cannot revoke the original tunnel",
+      );
       assert.equal(
         (await snapshot(second)).status,
         "waiting",
