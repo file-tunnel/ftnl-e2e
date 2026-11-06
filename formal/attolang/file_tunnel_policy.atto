@@ -1,0 +1,19 @@
+// Pure source reference; real QR/capability/transfer conformance remains host-owned.
+define module file_tunnel_policy as
+  pub fnc may_claim(bool issued, bool used, bool cancelled): bool {
+    return issued && !used && !cancelled;
+  }
+  pub fnc may_transfer(bool claimed, bool cancelled): bool {
+    return claimed && !cancelled;
+  }
+  pub fnc may_reuse_ticket(bool fresh, bool already_used): bool {
+    return fresh && !already_used;
+  }
+  pub fnc self_check(): bool {
+    return may_claim(true,false,false) &&
+      !may_claim(true,true,false) &&
+      !may_claim(true,false,true) &&
+      may_transfer(true,false) && !may_transfer(true,true) &&
+      may_reuse_ticket(true,false) && !may_reuse_ticket(true,true);
+  }
+end
