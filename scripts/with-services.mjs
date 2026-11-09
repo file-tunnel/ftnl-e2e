@@ -31,11 +31,11 @@ for (const signal of ["SIGINT", "SIGTERM"]) {
 process.once("exit", terminateServices);
 
 if (!external) {
-  await assertOriginUnoccupied("backend", apiOrigin);
-  await assertOriginUnoccupied("portal", portalOrigin);
   if (new URL(apiOrigin).host === new URL(portalOrigin).host) {
     throw new Error("backend and portal origins must use distinct listen sockets");
   }
+  await assertOriginUnoccupied("backend", apiOrigin);
+  await assertOriginUnoccupied("portal", portalOrigin);
   const backendDir = path.resolve(
     process.env.FTNL_BACKEND_DIR ?? "../ftnl-backend-api.rs",
   );
@@ -102,7 +102,7 @@ async function assertOriginUnoccupied(label, origin) {
   ) {
     throw new Error("local " + label + " origin must be an HTTP origin without credentials or paths");
   }
-  const host = url.hostname.replace(/^\\[|\\]$/g, "");
+  const host = url.hostname.replace(/^\[|\]$/g, "");
   const port = Number(url.port || "80");
   if (!Number.isSafeInteger(port) || port < 1 || port > 65535) {
     throw new Error("local " + label + " origin has an invalid TCP port");
