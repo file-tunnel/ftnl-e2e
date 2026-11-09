@@ -81,8 +81,8 @@ function range(start: number, end: number, total = jpegBytes.length): string {
 
 function checkpointHeaders(response: Response, offset: number, complete: boolean): void {
   assert.equal(response.status, complete ? 204 : 308, "upload checkpoint response status");
-  assert.equal(response.headers.get("x-upload-offset"), String(offset));
-  assert.equal(response.headers.get("x-upload-complete"), String(complete));
+  assert.equal(response.headers.get("upload-offset"), String(offset));
+  assert.equal(response.headers.get("upload-complete"), String(complete));
 }
 
 async function checkpoint(
