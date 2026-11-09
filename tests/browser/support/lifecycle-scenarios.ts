@@ -344,7 +344,7 @@ export async function concurrentPairingHasOneWinner(factory: BrowserFactory): Pr
       }, (value) => value !== "pending") as Promise<"connected" | "rejected">;
     }
     const results = await Promise.all([outcome(left.page), outcome(right.page)]);
-    assert.deepEqual(results.sort(), ["connected", "rejected"]);
+    assert.deepEqual([...results].sort(), ["connected", "rejected"]);
     const winner = results[0] === "connected" ? left.page : right.page;
     assert.ok(await winner.sessionStorage(phoneSessionKey(tunnel)));
     assert.equal(new URL(await winner.currentUrl()).hash, "");
