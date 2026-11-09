@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { createServer } from "node:net";
 import path from "node:path";
 
 const suite = process.argv[2];
@@ -30,6 +31,11 @@ for (const signal of ["SIGINT", "SIGTERM"]) {
 process.once("exit", terminateServices);
 
 if (!external) {
+  if (new URL(apiOrigin).host === new URL(portalOrigin).host) {
+    throw new Error("backend and portal origins must use distinct listen sockets");
+  }
+  await assertOriginUnoccupied("backend", apiOrigin);
+  await assertOriginUnoccupied("portal", portalOrigin);
   const backendDir = path.resolve(
     process.env.FTNL_BACKEND_DIR ?? "../ftnl-backend-api.rs",
   );
@@ -82,6 +88,39 @@ const exitCode = await new Promise((resolve, reject) => {
 await cleanup();
 process.exitCode = exitCode;
 
+// Binding a temporary listener catches an already-running/stale service
+// before Cargo starts. A /healthz response alone cannot prove process ownership.
+async function assertOriginUnoccupied(label, origin) {
+  const url = new URL(origin);
+  if (
+    url.protocol !== "http:" ||
+    url.username ||
+    url.password ||
+    url.pathname !== "/" ||
+    url.search ||
+    url.hash
+  ) {
+    throw new Error("local " + label + " origin must be an HTTP origin without credentials or paths");
+  }
+  const host = url.hostname.replace(/^\[|\]$/g, "");
+  const port = Number(url.port || "80");
+  if (!Number.isSafeInteger(port) || port < 1 || port > 65535) {
+    throw new Error("local " + label + " origin has an invalid TCP port");
+  }
+  await new Promise((resolve, reject) => {
+    const probe = createServer();
+    probe.once("error", (error) => {
+      reject(new Error(
+        "local " + label + " listen socket is occupied or unavailable (" +
+        (error.code ?? "unknown") + "); refusing unowned /healthz evidence",
+      ));
+    });
+    probe.listen({ host, port, exclusive: true }, () => {
+      probe.close((error) => error ? reject(error) : resolve());
+    });
+  });
+}
+
 function startCargo(manifestPath, binary, extraEnv) {
   return spawn(
     "cargo",
@@ -97,7 +136,7 @@ function startCargo(manifestPath, binary, extraEnv) {
 async function waitForHealth(url, service) {
   const deadline = Date.now() + 240_000;
   while (Date.now() < deadline) {
-    if (service.exitCode !== null) {
+    if (service.exitCode !== null || service.signalCode !== null) {
       await cleanup();
       throw new Error(
         `service exited with code ${service.exitCode} before becoming healthy: ${url}`,

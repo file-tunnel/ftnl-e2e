@@ -17,7 +17,8 @@
     "typecheck": "tsc --noEmit",
     "report": "playwright show-report",
     "lint:ores": "if [ -f .ores-lint/lint.sh ]; then sh .ores-lint/lint.sh; else echo 'ores-lint not installed'; fi",
-    "prepublishOnly": "npm run lint:ores"
+    "prepublishOnly": "npm run lint:ores",
+    "test:harness": "node --test tests/harness/*.test.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
