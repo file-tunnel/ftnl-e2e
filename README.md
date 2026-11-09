@@ -45,8 +45,12 @@ npm run test:puppeteer
 SELENIUM_BROWSER=chrome npm run test:selenium
 ```
 
-The service wrapper starts both Rust services, waits for their health
+The service wrapper checks that its local backend and portal listen sockets
+are initially free, starts both Rust services, waits for their health
 endpoints, runs the selected driver, and cleans up its process group.
+It refuses to certify an unrelated pre-existing service simply because
+that service answers `/healthz`. Run `npm run test:harness` for offline
+regression tests of this fail-closed preflight.
 `nix develop --command agent-check` performs reproducible dependency,
 TypeScript, Playwright-discovery, and suite-layout checks without downloading
 or launching browsers. The `nix` workflow adds shell, workflow, formatting, and
