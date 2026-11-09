@@ -1,5 +1,6 @@
 import {
   cancellationRevokesInFlightTransfer,
+  chunkBoundaryBinaryIntegrity,
   concurrentPairingHasOneWinner,
   quotaRejectionPreservesTransfer,
   resumableUploadRejectsCorruption,
@@ -10,3 +11,5 @@ puppeteerTest("resumable upload rejects corruption and preserves checkpoint", re
 puppeteerTest("cancellation revokes incomplete uploads", cancellationRevokesInFlightTransfer);
 puppeteerTest("quota overflow preserves existing files", quotaRejectionPreservesTransfer);
 puppeteerTest("concurrent pairing has exactly one winner", concurrentPairingHasOneWinner);
+
+puppeteerTest("large binary chunks preserve every byte and checkpoint", chunkBoundaryBinaryIntegrity);

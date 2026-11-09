@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 
 import {
   apiOrigin,
@@ -40,14 +41,14 @@ async function connect(page: BrowserPage, tunnel: Tunnel): Promise<string> {
   return capability;
 }
 
-async function declare(tunnel: Tunnel, phone: string, name: string): Promise<string> {
+async function declare(tunnel: Tunnel, phone: string, name: string, sizeBytes = jpegBytes.length): Promise<string> {
   const response = await fetch(resource(tunnel) + "/files", {
     method: "POST",
     headers: { ...auth(phone), "content-type": "application/json" },
     body: JSON.stringify({
       name,
       media_type: "image/jpeg",
-      size_bytes: jpegBytes.length,
+      size_bytes: sizeBytes,
     }),
   });
   assert.equal(response.status, 201, "valid file declaration");
@@ -353,4 +354,71 @@ export async function concurrentPairingHasOneWinner(factory: BrowserFactory): Pr
     await cancel(tunnel).catch(() => undefined);
     await Promise.all([left.close(), right.close()]);
   }
+}
+
+
+/**
+ * Real transport stress: 256 KiB plus a non-aligned tail; the caller is a
+ * browser-paired phone and every chunk traverses the running HTTP server.
+ */
+export async function chunkBoundaryBinaryIntegrity(factory: BrowserFactory): Promise<void> {
+  await withSession(factory, "large-chunk-integrity", async (phonePage) => {
+    const tunnel = await createTunnel();
+    const events = await subscribe(tunnel);
+    let completed = false;
+    try {
+      const phone = await connect(phonePage, tunnel);
+      const payload = Buffer.alloc(256 * 1024 + 257);
+      let word = 0x9e3779b9;
+      for (let index = 0; index < payload.length; index += 1) {
+        word ^= word << 13;
+        word ^= word >>> 17;
+        word ^= word << 5;
+        payload[index] = word & 0xff;
+      }
+      const fileId = await declare(tunnel, phone, "binary-chunk-boundaries.jpg", payload.length);
+      const chunkSize = 64 * 1024 + 1;
+      let count = 0;
+      for (let start = 0; start < payload.length; start += chunkSize) {
+        const end = Math.min(payload.length, start + chunkSize);
+        const complete = end === payload.length;
+        checkpointHeaders(
+          await put(
+            tunnel, fileId, phone,
+            range(start, end - 1, payload.length),
+            payload.subarray(start, end),
+          ),
+          end,
+          complete,
+        );
+        await checkpoint(tunnel, fileId, phone, end, complete);
+        const state = await snapshot(tunnel);
+        assert.equal(state.files.length, 1);
+        assert.equal(state.files[0]?.bytes_transferred, end);
+        assert.equal(state.files[0]?.status, complete ? "available" : "uploading");
+        count += 1;
+      }
+      await events.waitFor("file.available");
+      const progress = events.events.filter(
+        (event) => event.kind === "file.progress" && event.file_id === fileId,
+      );
+      assert.equal(progress.length, count, "each committed chunk emits one progress event");
+      assert.deepEqual(
+        progress.map((event) => event.bytes_transferred),
+        Array.from({ length: count }, (_, index) =>
+          Math.min(payload.length, (index + 1) * chunkSize)),
+      );
+      const received = await download(tunnel, fileId);
+      assert.deepEqual(received, payload, "high-entropy binary bytes must be exact");
+      assert.equal(
+        createHash("sha256").update(received).digest("hex"),
+        createHash("sha256").update(payload).digest("hex"),
+      );
+      assert.equal((await snapshot(tunnel)).status, "complete");
+      completed = true;
+    } finally {
+      events.close();
+      if (!completed) await cancel(tunnel).catch(() => undefined);
+    }
+  });
 }

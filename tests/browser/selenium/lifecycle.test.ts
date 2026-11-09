@@ -1,5 +1,6 @@
 import {
   cancellationRevokesInFlightTransfer,
+  chunkBoundaryBinaryIntegrity,
   concurrentPairingHasOneWinner,
   quotaRejectionPreservesTransfer,
   resumableUploadRejectsCorruption,
@@ -10,3 +11,5 @@ seleniumTest("resumable upload rejects corruption and preserves checkpoint", res
 seleniumTest("cancellation revokes incomplete uploads", cancellationRevokesInFlightTransfer);
 seleniumTest("quota overflow preserves existing files", quotaRejectionPreservesTransfer);
 seleniumTest("concurrent pairing has exactly one winner", concurrentPairingHasOneWinner);
+
+seleniumTest("large binary chunks preserve every byte and checkpoint", chunkBoundaryBinaryIntegrity);

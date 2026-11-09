@@ -2,6 +2,7 @@ import { test } from "@playwright/test";
 
 import {
   cancellationRevokesInFlightTransfer,
+  chunkBoundaryBinaryIntegrity,
   concurrentPairingHasOneWinner,
   quotaRejectionPreservesTransfer,
   resumableUploadRejectsCorruption,
@@ -22,4 +23,8 @@ test("rejects file quota overflow without corrupting accepted transfers", async 
 
 test("allows exactly one winner when two phones scan a QR concurrently", async ({ browser }) => {
   await concurrentPairingHasOneWinner(playwrightFactory(browser));
+});
+
+test("streams high-entropy bytes over five unaligned chunks with exact checkpoints", async ({ browser }) => {
+  await chunkBoundaryBinaryIntegrity(playwrightFactory(browser));
 });
