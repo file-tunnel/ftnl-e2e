@@ -1,6 +1,7 @@
 import { test } from "@playwright/test";
 
 import {
+  ambiguousPairingCannotRedeem,
   capabilityBoundaries,
   crossTunnelCapabilityIsolation,
   pairingSecurity,
@@ -21,4 +22,8 @@ test("enforces phone, desktop, and one-time event-ticket scopes", async ({
 
 test("isolates capabilities between tunnels", async ({ browser }) => {
   await crossTunnelCapabilityIsolation(playwrightFactory(browser));
+});
+
+test("rejects ambiguous fragment credentials without consuming valid pairing", async ({ browser }) => {
+  await ambiguousPairingCannotRedeem(playwrightFactory(browser));
 });
