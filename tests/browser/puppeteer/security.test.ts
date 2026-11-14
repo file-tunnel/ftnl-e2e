@@ -1,4 +1,5 @@
 import {
+  ambiguousPairingCannotRedeem,
   capabilityBoundaries,
   crossTunnelCapabilityIsolation,
   pairingSecurity,
@@ -18,4 +19,9 @@ puppeteerTest(
 puppeteerTest(
   "isolates capabilities between tunnels",
   crossTunnelCapabilityIsolation,
+);
+
+puppeteerTest(
+  "rejects ambiguous fragment credentials without consuming valid pairing",
+  ambiguousPairingCannotRedeem,
 );
