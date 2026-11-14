@@ -13,7 +13,8 @@ permissions:
 
 env:
   BACKEND_REV: 1122ab543ab5157e02c5808da69fab57da7c1ed1
-  PORTAL_PUBLIC_REV: 3499f00c40a5ed973d6e33cc0f77668f0e6e93f3
+  # Integration SHA from file-tunnel/ftnl-web-server.rs#54; re-pin after merge.
+  PORTAL_PUBLIC_REV: 3786d2af0ba463dd3c79e9f71f8eb5e0e77b5fe8
 
 concurrency:
   group: browser-e2e-${{ github.repository }}-${{ github.ref }}
