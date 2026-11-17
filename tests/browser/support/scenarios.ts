@@ -202,6 +202,48 @@ export async function pairingSecurity(factory: BrowserFactory): Promise<void> {
   }
 }
 
+/// Reject malformed pairing URLs before redeeming their one-time capability.
+/// The original, canonical pairing link must still be usable afterwards.
+export async function ambiguousPairingCannotRedeem(
+  factory: BrowserFactory,
+): Promise<void> {
+  const tunnel = await createTunnel();
+  const url = new URL(tunnel.pairing_uri);
+  const encodedSecret = encodeURIComponent(pairingSecret(tunnel));
+  const malformedFragments = [
+    `${url.hash}&c=${encodedSecret}`,
+    `${url.hash}&`,
+    `#%63=${encodedSecret}`,
+  ];
+  try {
+    await withSession(factory, "ambiguous-pairing", async (phone) => {
+      for (const fragment of malformedFragments) {
+        await phone.goto(`${portalOrigin}${url.pathname}${fragment}`);
+        await expectText(phone, "#error", /incomplete|already been used/i);
+        assert.equal(
+          await phone.sessionStorage(phoneSessionKey(tunnel)),
+          null,
+          "invalid pairing must not create a phone capability",
+        );
+        assert.equal(
+          new URL(await phone.currentUrl()).hash,
+          "",
+          "invalid pairing fragments must be scrubbed from browser history",
+        );
+      }
+
+      await phone.goto(tunnel.pairing_uri);
+      await expectText(phone, "#connection", "Connected securely");
+      assert.ok(
+        await phone.sessionStorage(phoneSessionKey(tunnel)),
+        "canonical pairing must remain redeemable after invalid attempts",
+      );
+    });
+  } finally {
+    await cancel(tunnel);
+  }
+}
+
 export async function validationFailures(
   factory: BrowserFactory,
 ): Promise<void> {

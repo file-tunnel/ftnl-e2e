@@ -1,4 +1,5 @@
 import {
+  ambiguousPairingCannotRedeem,
   capabilityBoundaries,
   crossTunnelCapabilityIsolation,
   pairingSecurity,
@@ -18,4 +19,9 @@ seleniumTest(
 seleniumTest(
   "isolates capabilities between tunnels",
   crossTunnelCapabilityIsolation,
+);
+
+seleniumTest(
+  "rejects ambiguous fragment credentials without consuming valid pairing",
+  ambiguousPairingCannotRedeem,
 );
