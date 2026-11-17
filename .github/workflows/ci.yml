@@ -33,5 +33,7 @@ jobs:
         run: npm ci
       - name: Type-check all browser adapters and scenarios
         run: npm run typecheck
+      - name: Exercise fail-closed service preflight offline
+        run: npm run test:harness
       - name: Verify test discovery and suite layout
         run: npm run test:list
