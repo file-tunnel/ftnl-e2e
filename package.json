@@ -33,7 +33,7 @@
     "selenium-webdriver": "^4.52.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "ws": "^8.22.1"
+    "ws": "^8.23.0"
   },
   "license": "MIT",
   "oresLint": {
